@@ -31,8 +31,6 @@ placementTilesData2D.forEach((row, y) => {
   })
 })
 
-console.log(placementTiles)
-
 const image = new Image()
 
 image.onload = () => {
@@ -48,7 +46,6 @@ for (let i = 1; i < 10; i++) {
       position: { x: waypoints[0].x - xOffset, y: waypoints[0].y }
     })
   )
-  console.log(waypoints[0].x - xOffset)
 }
 
 const buildings = []
@@ -67,7 +64,28 @@ function animate() {
   })
 
   buildings.forEach((building) => {
-    building.draw()
+    building.update()
+    building.target = null
+    const validEnemies = enemies.filter((enemy) => {
+      const xDifference = enemy.center.x - building.center.x
+      const yDifference = enemy.center.y - building.center.y
+      const distance = Math.hypot(xDifference, yDifference)
+      return distance < enemy.radius + building.radius
+    })
+    building.target = validEnemies[0]
+
+    for (let i = building.projectiles.length - 1; i >= 0; i--) {
+      const projectile = building.projectiles[i]
+
+      projectile.update()
+
+      const xDifference = projectile.enemy.center.x - projectile.position.x
+      const yDifference = projectile.enemy.center.y - projectile.position.y
+      const distance = Math.hypot(xDifference, yDifference)
+      if (distance < projectile.enemy.radius + projectile.radius) {
+        building.projectiles.splice(i, 1)
+      }
+    }
   })
 }
 
@@ -88,7 +106,6 @@ canvas.addEventListener('click', (event) => {
     )
     activeTile.isOccupied = true
   }
-  console.log(buildings)
 })
 
 window.addEventListener('mousemove', (event) => {
